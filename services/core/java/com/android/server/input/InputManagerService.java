@@ -365,6 +365,9 @@ public class InputManagerService extends IInputManager.Stub
     /** Switch code: Microphone. When set, the mic is muted. */
     public static final int SW_MUTE_DEVICE = 0x0e;
 
+    /** Switch code: Game key. Configurable */
+    public static final int SW_GAME = 0x0f;
+
     public static final int SW_LID_BIT = 1 << SW_LID;
     public static final int SW_TABLET_MODE_BIT = 1 << SW_TABLET_MODE;
     public static final int SW_KEYPAD_SLIDE_BIT = 1 << SW_KEYPAD_SLIDE;
@@ -376,6 +379,7 @@ public class InputManagerService extends IInputManager.Stub
             SW_HEADPHONE_INSERT_BIT | SW_MICROPHONE_INSERT_BIT | SW_JACK_PHYSICAL_INSERT_BIT | SW_LINEOUT_INSERT_BIT;
     public static final int SW_CAMERA_LENS_COVER_BIT = 1 << SW_CAMERA_LENS_COVER;
     public static final int SW_MUTE_DEVICE_BIT = 1 << SW_MUTE_DEVICE;
+    public static final int SW_GAME_BIT = 1 << SW_GAME;
 
     // The following are layer numbers used for z-ordering the input overlay layers on the display.
     // This is used for ordering layers inside {@code DisplayContent#getInputOverlayLayer()}.
@@ -2277,6 +2281,25 @@ public class InputManagerService extends IInputManager.Stub
             audioManager.setMicrophoneMuteFromSwitch(micMute);
 
             setSensorPrivacy(Sensors.MICROPHONE, micMute);
+        }
+
+        if ((switchMask & SW_GAME_BIT) != 0) {
+            final boolean gameStatus = ((switchValues & SW_GAME_BIT) == 0);
+            Slog.d(TAG, "Game key status: " + gameStatus);
+
+            int deviceId = -1;
+
+            synchronized (mInputDevicesLock) {
+                for (final InputDevice inputDevice : mInputDevices) {
+                    if (inputDevice.getName().equals("gpio-keys_nubia")) {
+                        deviceId = inputDevice.getId();
+                    }
+                }
+            }
+
+            KeyEvent dummy = new KeyEvent(0, whenNanos, gameStatus ? KeyEvent.ACTION_DOWN : KeyEvent.ACTION_UP,
+                     KeyEvent.KEYCODE_F8, 0, 0, deviceId, 66);
+            mWindowManagerCallbacks.interceptKeyBeforeQueueing(dummy, 0);
         }
     }
 
