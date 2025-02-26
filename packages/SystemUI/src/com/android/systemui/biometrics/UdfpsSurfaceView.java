@@ -49,8 +49,8 @@ public class UdfpsSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         void enableGhbm(@NonNull Surface surface, @Nullable Runnable onDisplayConfigured);
     }
 
-    @NonNull private final SurfaceHolder mHolder;
-    @NonNull private final Paint mSensorPaint;
+    @NonNull protected final SurfaceHolder mHolder;
+    @NonNull protected final Paint mSensorPaint;
 
     @Nullable private GhbmIlluminationListener mGhbmIlluminationListener;
     @Nullable private Runnable mOnDisplayConfigured;

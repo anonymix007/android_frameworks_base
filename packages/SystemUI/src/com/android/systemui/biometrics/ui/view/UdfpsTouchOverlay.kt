@@ -23,6 +23,7 @@ import android.view.Surface
 import android.widget.FrameLayout
 
 import com.android.systemui.biometrics.UdfpsDisplayModeProvider
+import com.android.systemui.biometrics.UdfpsMaskSurfaceView
 import com.android.systemui.biometrics.UdfpsSurfaceView
 import com.android.systemui.res.R
 
@@ -31,6 +32,7 @@ import com.android.systemui.res.R
  * for fingerprint authentication.
  */
 class UdfpsTouchOverlay(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+    private var maskView: UdfpsMaskSurfaceView? = null
     private var ghbmView: UdfpsSurfaceView? = null
     private var udfpsDisplayMode: UdfpsDisplayModeProvider? = null
 
@@ -43,6 +45,7 @@ class UdfpsTouchOverlay(context: Context, attrs: AttributeSet?) : FrameLayout(co
         private set
 
     override fun onFinishInflate() {
+        maskView = findViewById(R.id.mask_view)
         ghbmView = findViewById(R.id.hbm_view)
     }
 
@@ -52,6 +55,12 @@ class UdfpsTouchOverlay(context: Context, attrs: AttributeSet?) : FrameLayout(co
 
     fun configureDisplay(onDisplayConfigured: Runnable) {
         isDisplayConfigured = true
+        val mView = maskView
+        if (mView != null) {
+            mView.setGhbmIlluminationListener(this::doMask)
+            mView.visibility = VISIBLE
+            mView.startGhbmIllumination({})
+        }
         val gView = ghbmView
         if (gView != null) {
             gView.setGhbmIlluminationListener(this::doIlluminate)
@@ -69,9 +78,21 @@ class UdfpsTouchOverlay(context: Context, attrs: AttributeSet?) : FrameLayout(co
         }
     }
 
+    private fun doMask(surface: Surface?, onDisplayConfigured: Runnable?) {
+        udfpsDisplayMode?.enable {
+            onDisplayConfigured?.run()
+            maskView?.drawIlluminationDot(RectF(sensorRect))
+        }
+    }
+
+
     fun unconfigureDisplay() {
         isDisplayConfigured = false
         ghbmView?.let { view ->
+            view.setGhbmIlluminationListener(null)
+            view.visibility = INVISIBLE
+        }
+        maskView?.let { view ->
             view.setGhbmIlluminationListener(null)
             view.visibility = INVISIBLE
         }
