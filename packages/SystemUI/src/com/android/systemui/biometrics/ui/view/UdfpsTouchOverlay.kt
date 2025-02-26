@@ -15,6 +15,9 @@
  */
 package com.android.systemui.biometrics.ui.view
 
+import java.util.Timer
+import kotlin.concurrent.schedule
+
 import android.content.Context
 import android.graphics.Rect
 import android.graphics.RectF
@@ -64,8 +67,10 @@ class UdfpsTouchOverlay(context: Context, attrs: AttributeSet?) : FrameLayout(co
 
     private fun doIlluminate(surface: Surface?, onDisplayConfigured: Runnable?) {
         udfpsDisplayMode?.enable {
-            onDisplayConfigured?.run()
             ghbmView?.drawIlluminationDot(RectF(sensorRect))
+            Timer("OnUiReady", false).schedule(20) {
+                onDisplayConfigured?.run()
+            }
         }
     }
 
