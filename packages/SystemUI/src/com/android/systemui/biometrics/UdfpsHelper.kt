@@ -148,11 +148,12 @@ class UdfpsHelper(
     // brightness_alpha_lut array from the kernel. This provides a comparable array.
     private fun brightnessToAlpha() {
         val adjustedBrightness =
-            (currentBrightness.coerceIn(minBrightness, maxBrightness) * 4095).toInt()
+            (currentBrightness.coerceIn(/*minBrightness*/ 0.0f, /*maxBrightness*/ 1.0f) * 4095).toInt()
 
         val targetAlpha = brightnessAlphaMap[adjustedBrightness]?.div(255.0f)
             ?: interpolateAlpha(adjustedBrightness)
 
+        Log.i(TAG, "Brightness range: $minBrightness, $maxBrightness")
         Log.i(TAG, "Adjusted Brightness: $adjustedBrightness, Alpha: $targetAlpha")
 
         alphaAnimator.setFloatValues(view.alpha, targetAlpha)
